@@ -36,14 +36,24 @@ function renderTasks() {
   const filter = filterSubject.value;
   const view = filter ? tasks.filter(t => t.subjectId === filter) : tasks;
 
-  taskList.innerHTML = view.sort((a,b)=> (a.due||'').localeCompare(b.due||''))
+  taskList.innerHTML = view
+    .sort((a, b) => (a.due || '').localeCompare(b.due || ''))
     .map(t => {
       const subject = subjects.find(s => s.id === t.subjectId)?.name || 'Unknown';
       const due = t.due ? new Date(t.due).toLocaleDateString() : 'No date';
+
+      // 🔹 Pick a badge colour class based on task type
+      const typeKey = (t.type || '').toLowerCase();
+      const badgeClass =
+        typeKey === 'homework'   ? 'badge-homework'  :
+        typeKey === 'assessment' ? 'badge-assessment' :
+        'badge-study'; // default green
+
       return `
       <li>
         <div>
-          <strong>${t.title}</strong> <span class="badge">${t.type}</span>
+          <strong>${t.title}</strong>
+          <span class="badge ${badgeClass}" aria-label="Task type: ${t.type}">${t.type}</span>
           <div class="meta">Subject: ${subject} • Due: ${due}</div>
         </div>
         <div>
@@ -51,10 +61,12 @@ function renderTasks() {
           <button class="remove" data-remove-task="${t.id}">Delete</button>
         </div>
       </li>`;
-    }).join('');
+    })
+    .join('');
 
   renderDashboard();
 }
+
 
 function renderDashboard() {
   statSubjects.textContent = subjects.length;
